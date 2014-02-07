@@ -1,0 +1,802 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>MIX Maps</title>
+    <!--<script src="http://mc-fusion.cbre.com/maps/mc_maps_api_current.js" type="text/javascript"></script>
+    <script src="http://mc-fusion.cbre.com/maps/mc_tiles_current.js" type="text/javascript"></script>-->
+    <script src="https://maps.google.com/maps?file=api&v=2&client=gme-cbre&sensor=false&channel=mix" type="text/javascript"></script>
+   
+	<style type="text/css">  
+	html, body { height: 100%; width: 100%; font-family:Arial, sans-serif; font-size:9pt;}    
+    html  {overflow: hidden}
+    body { margin: 0px 0px 0px 0px; padding: 0px;}
+    #map { height: 100%; margin-right: 250px; background: black;}
+    #rightpanel	{ position: absolute; right: 0px; top: 0px; width: 250px; overflow: auto; height: 100%; background-color: #98B9AD;}
+    #bottomrow { position: absolute; right: 30px; bottom: 10px; }
+    div,fieldset,input,textarea,p { margin:0;padding:0;	}
+	fieldset,img { border:0; }
+	h1,h2,h3,h4,h5,h6 { font-size:100%; font-weight:normal;}
+
+	.PSPUSHBUTTON {font-family:Arial,sans-serif;font-size:8pt;font-weight:normal;font-style:normal;color:rgb(0,0,0);background-color:rgb(250,232,177);background-repeat:no-repeat;background-position:2% 40%;vertical-align:middle;border-width:1px;border-color:rgb(186,153,99);border-style:solid;width:95px;height:20px;cursor:pointer;}
+	.PSGROUPBOX{font-family:Verdana,Arial,sans-serif;font-size:8pt;font-weight:normal;font-style:normal;color:rgb(0,48,33);background-color:rgb(255,255,255);border-top-width:0px;border-bottom-width:1px;border-left-width:0px;border-right-width:0px;border-top-color:rgb(0,48,33);border-bottom-color:rgb(0,48,33);border-top-style:solid;border-bottom-style:solid;border-left-style:none;border-right-style:none;}
+	.PSGROUPBOXLABEL{font-family:Verdana,Arial,sans-serif;font-size:8pt;font-weight:bold;font-style:normal;color:rgb(0,48,33);text-indent:1px;padding-bottom:1px;border-top-width:0px;border-bottom-width:1px;border-top-color:rgb(0,48,33);border-bottom-color:rgb(0,48,33);border-top-style:none;border-bottom-style:solid;border-left-style:none;border-right-style:none;}
+    .PSEDITBOX{font-family:Verdana,Arial,sans-serif;font-size:8pt;font-weight:normal;font-style:normal;color:rgb(0,0,0);border-width:1px;border-top-color:rgb(153,153,153);border-bottom-color:rgb(204,204,204);border-left-color:rgb(153,153,153);border-right-color:rgb(204,204,204);border-style:solid;}
+	
+    .context {font-family:Arial, sans-serif;text-decoration:none;color:#4444ff;font-size:small;	}
+    a:hover div { background:#eee;}       
+
+	#aep_ovrl {background-color: black;-moz-opacity: 0.7; opacity: 0.7;top: 0; left: 0; position: fixed;width: 100%; height:100%; z-index: 99;}
+	#aep_ww { position: fixed; z-index: 100; top: 0; left: 0; width: 100%; height: 100%; text-align: center;}
+	#aep_win { margin: 20% auto 0 auto; width: 400px; text-align: left;}
+	#aep_w {background-color: white; padding: 3px; border: 1px solid black; background-color: #EEE;}
+	#aep_t {color: white; margin: 0 0 2px 3px; font-family: Arial, sans-serif; font-size: 10pt;}
+	#aep_text {width: 98%;}
+	#aep_w span {font-family: Arial, sans-serif; font-size: 10pt;}
+	#aep_w div {text-align: right; margin-top: 5px;}
+
+	v\:*	{behavior:url{#default#VML);}
+    </style>
+
+    <!-- IE specific code: -->
+	<!--[if lte IE 7]> 
+	<style type="text/css"> 
+	#aep_ovrl { 
+	position: absolute; 
+	filter:alpha(opacity=70); 
+	top: expression(eval(document.body.scrollTop)); 
+	width: expression(eval(document.body.clientWidth)); 
+	} 
+	#aep_ww {  
+	position: absolute;  
+	top: expression(eval(document.body.scrollTop));  
+	} 
+	</style> 
+	<![endif]-->		
+	<script type="text/javascript" src='prototype.js'></script>
+    <script type="text/javascript">    
+    //<![CDATA[
+    var map;
+    var geocoder = new GClientGeocoder();
+	var selectedShape = 0;
+	var shapes = [];
+	var polyMarkers = [];
+	var polyShapes = [];    
+    var polygons = [];
+    var selectedMarker;
+    var currentCount;
+    var sType = "Properties";
+    var session = null;
+    var source = null;
+    	    
+    var fillColor = "#0000FF"; // blue fill
+    var lineColor = "#000000"; // black line
+    var opacity = .35;
+    var lineWeight = 2;    
+
+	var blueIcon = new GIcon();
+	blueIcon.image = "http://labs.google.com/ridefinder/images/mm_20_blue.png";	
+	blueIcon.shadow = "http://labs.google.com/ridefinder/images/mm_20_shadow";
+	blueIcon.iconSize = new GSize(12, 20);
+	blueIcon.shadowSize = new GSize(22, 20);
+	blueIcon.iconAnchor = new GPoint(6, 20);
+	
+	var greenIcon = new GIcon();
+	greenIcon.image = "http://labs.google.com/ridefinder/images/mm_20_green.png";
+	greenIcon.shadow = "http://labs.google.com/ridefinder/images/mm_20_shadow";
+	greenIcon.iconSize = new GSize(12, 20);
+	greenIcon.shadowSize = new GSize(22, 20);
+	greenIcon.iconAnchor = new GPoint(6, 20);
+	
+	// Global variable that can be used by the context handling functions
+    var clickedPixel; 
+	// The context menu div for rightclicks
+	var contextmenu = document.createElement("div");		
+    
+	function shapeDesc(type,radius)
+	{	
+        this.type = type;
+		this.radius = radius;
+	}
+ 
+    function load() 
+    {
+      if (GBrowserIsCompatible()) 
+      {
+	    map = new GMap2(document.getElementById("map"));
+        map.addControl(new GLargeMapControl());
+        map.addControl(new GScaleControl());
+        map.addControl(new GMapTypeControl());
+        map.enableScrollWheelZoom();   
+        // MCMap(map);        
+        
+		// Default Map to Center of USA
+		var point = new GLatLng(40,-100);
+		map.setCenter(point,13);
+		
+		contextmenu.style.visibility="hidden";
+      	contextmenu.style.background="#ffffff";
+      	contextmenu.style.border="1px solid #8888FF";
+
+	  	var menuMap = '<a href="#" onclick="javascript:showAll();"><div class="context">&nbsp;&nbsp;Show All Boundaries&nbsp;&nbsp;</div></a>'
+					+ '<a href="#" onclick="javascript:zoomIn();"><div class="context">&nbsp;&nbsp;Zoom In&nbsp;&nbsp;</div></a>'
+					+ '<a href="#" onclick="javascript:zoomOut();"><div class="context">&nbsp;&nbsp;Zoom Out&nbsp;&nbsp;</div></a>';									
+
+		var menuNewCircle = '<a href="#" onclick="javascript:addShape(1);"><div class="context">&nbsp;&nbsp;New Circle (Radius = 1)&nbsp;&nbsp;</div></a>'
+								+ '<a href="#" onclick="javascript:addShape(2);"><div class="context">&nbsp;&nbsp;New Circle (Radius = 3)&nbsp;&nbsp;</div></a>'
+								+ '<a href="#" onclick="javascript:addShape(3);"><div class="context">&nbsp;&nbsp;New Circle (Radius = 5)&nbsp;&nbsp;</div></a>';
+
+		var menuNewPolygon = '<a href="#" onclick="javascript:addShape(0);"><div class="context">&nbsp;&nbsp;New Polygon&nbsp;&nbsp;</div></a>';
+												
+      	var menuCircle = '<a href="javascript:drawCircle(1);getCount();"><div class="context">&nbsp;&nbsp;Radius = 1&nbsp;&nbsp;</div></a>'
+        	                    + '<a href="javascript:drawCircle(3);getCount();"><div class="context">&nbsp;&nbsp;Radius = 3&nbsp;&nbsp;</div></a>'
+            	                + '<a href="javascript:drawCircle(5);getCount();"><div class="context">&nbsp;&nbsp;Radius = 5&nbsp;&nbsp;</div></a>'
+                                + '<a href="javascript:radiusPrompt();"><div class="context">&nbsp;&nbsp;Custom Radius&nbsp;&nbsp;</div></a>'
+                                + '<a href="javascript:removeShape();"><div class="context">&nbsp;&nbsp;Remove Circle&nbsp;&nbsp;</div></a>';
+
+		var menuPolygon = '<a href="javascript:deleteLastPoint();"><div class="context">&nbsp;&nbsp;Remove Last Point&nbsp;&nbsp;</div></a>'
+               	                + '<a href="javascript:removeShape();"><div class="context">&nbsp;&nbsp;Remove Polygon&nbsp;&nbsp;</div></a>';
+
+		var menuMarker = '<a href="javascript:deleteSelectedPoint();"><div class="context">&nbsp;&nbsp;Remove Selected Point&nbsp;&nbsp;</div></a>';
+                	            
+      	map.getContainer().appendChild(contextmenu);
+	
+    	GEvent.addListener(map,'singlerightclick',function(pixel,url,obj) {
+			selectedMarker = obj;
+  			clickedPixel = pixel;
+        	var x=pixel.x;
+        	var y=pixel.y;
+        	if (x > map.getSize().width - 120) { x = map.getSize().width - 120 }
+        	if (y > map.getSize().height - 100) { y = map.getSize().height - 100 }
+        	var pos = new GControlPosition(G_ANCHOR_TOP_LEFT, new GSize(x,y));
+
+			/* Generate Default Menu */
+			contextmenu.innerHTML = "";
+			if(document.getElementById("newCircleBtn").disabled == false)
+        	{  
+               contextmenu.innerHTML = menuNewCircle;
+			}
+			if(document.getElementById("newPolygonBtn").disabled == false)	
+            {
+			   contextmenu.innerHTML = contextmenu.innerHTML + menuNewPolygon;
+			}
+			if(contextmenu.innerHTML != "")	
+            {
+			   contextmenu.innerHTML = contextmenu.innerHTML + menuMap;
+			   pos.apply(contextmenu);
+    	       contextmenu.style.visibility = "visible";
+			}				
+			
+			/* Check if Rightclick occured in any existing polygons */
+			for(var i=0;i<shapes.length;i++)	
+            {
+				if(polygons[i] && shapes[selectedShape])	
+                {
+					var bMarkerClicked = false;					
+					if(obj.getIcon)	
+                    {
+					   if(polygons[i].Contains(obj.getPoint()))	
+                       {
+							bMarkerClicked = true;							
+					   }
+					   else if(shapes[selectedShape].type == "Polygon")	
+                       {
+							contextmenu.innerHTML = menuPolygon + menuMarker;
+							pos.apply(contextmenu);
+	       					contextmenu.style.visibility = "visible";
+							break;
+					   }
+					}
+					if(polygons[i].Contains(map.fromContainerPixelToLatLng(pixel)) || bMarkerClicked)	{
+						/* Right Click Shape currently selected */
+						if(i == selectedShape)	{
+							if(shapes[selectedShape].type == "Circle")	{
+								contextmenu.innerHTML = menuCircle;        				
+							}
+							else if(shapes[selectedShape].type == "Polygon")	{
+								contextmenu.innerHTML = menuPolygon;
+								if(bMarkerClicked)	{
+									contextmenu.innerHTML += menuMarker;
+								}
+							}
+							pos.apply(contextmenu);
+	       					contextmenu.style.visibility = "visible";
+							break;
+						}
+						/* RightClicked Shape not currently selected */
+						else {
+							updateSelected(i);
+							document.getElementById("radio"+i).checked = true;	
+							contextmenu.style.visibility = "hidden";
+							break;
+						}			
+					}
+				}
+			}			
+      	});
+		
+		GEvent.addListener(map, 'click', function(overlay, latlng) {
+			contextmenu.style.visibility="hidden";
+		 	if (latlng) { mapClick(latlng); }
+		});
+	
+		GEvent.addListener(map,'mouseout',function()	{
+			contextmenu.style.visibility="hidden";
+		});
+
+
+		// Load Shapes passed in as parameters in the query string
+		// skip the first character, we are not interested in the "?"
+      	var query = location.search.substring(1);
+		var lat;
+		var lon;
+
+      	// split the rest at each "&" character to give a list of  "argname=value"  pairs
+      	var pairs = query.split("&");
+      	for (var j=0; j<pairs.length; j++) {
+        	// break each pair at the first "=" to obtain the argname and value
+			var pos = pairs[j].indexOf("=");
+			var argname = pairs[j].substring(0,pos).toLowerCase();
+			var value = pairs[j].substring(pos+1).toLowerCase();
+
+        	// process each possible argname
+        	if (argname == "lat") {lat = parseFloat(value);}
+        	if (argname == "lon") {lon = parseFloat(value);}
+        	if (argname == "zoom") {map.setZoom(parseInt(value));}
+        	if (argname == "circle")	{
+				var circleParams = value.split(",");
+				var delimiter = circleParams[1].indexOf("^");
+				var centerPoint = new GLatLng(parseFloat(circleParams[1].substring(0,delimiter)),parseFloat(circleParams[0]));
+				newShape("Circle");
+				shapes[selectedShape].radius = parseFloat(circleParams[1].substring(delimiter+1)); 				
+				mapClick(centerPoint);        
+			}
+			if (argname == "poly")	{
+				var polygonParams = value.substring(1,value.length-1).split(",");
+				newShape("Polygon");
+				for(var p=0;p<polygonParams.length-2;p=p+2)	{
+					var nextPoint = new GLatLng(parseFloat(polygonParams[p+1]),parseFloat(polygonParams[p]));
+					mapClick(nextPoint);
+				}
+			}
+			if(argname == "stype")  {
+				switch(parseInt(value)) {
+				case 1:  sType = "Properties"; break;
+                case 2:  sType = "Tenants"; break;
+                case 3:  sType = "Transactions"; break;
+                case 4:  sType = "Properties"; break;
+                }
+            }
+            if(argname == "session")  {
+				session = value;
+            }
+            if(argname == "source")  {
+				source = value;                
+            }
+      	}
+
+		if(lat != undefined && lon != undefined)	{
+			point = new GLatLng(lat, lon);
+        	map.setCenter(point);			
+		}
+        showAll();  
+        getCount();
+      }
+    }
+
+    // Returns true if a point is inside a polygon
+    GPolygon.prototype.Contains = function(point) {
+    	var j=0;
+        var oddNodes = false;
+        var x = point.lng();
+        var y = point.lat();
+        for (var i=0; i < this.getVertexCount(); i++) {
+        	j++;
+          	if (j == this.getVertexCount()) {j = 0;}
+          	if (((this.getVertex(i).lat() < y) && (this.getVertex(j).lat() >= y))
+          	|| ((this.getVertex(j).lat() < y) && (this.getVertex(i).lat() >= y))) {
+            	if ( this.getVertex(i).lng() + (y - this.getVertex(i).lat())
+            	  (this.getVertex(j).lat()-this.getVertex(i).lat())
+            	  (this.getVertex(j).lng() - this.getVertex(i).lng())<x ) {
+              	oddNodes = !oddNodes
+            	}
+          	}
+        }
+    	return oddNodes;
+	}
+
+    /* Prompt Code */
+	var ae_cb = null;
+ 
+	function ae_prompt(cb, q, a, t) {
+		ae_cb = cb;
+		$('aep_t').innerHTML = t;
+		$('aep_prompt').innerHTML = q;
+		$('aep_text').value = a;
+		$('aep_ovrl').style.display = $('aep_ww').style.display = '';
+		$('aep_text').focus();
+		$('aep_text').select();
+	}
+ 
+	function ae_clk(m) {
+		$('aep_ovrl').style.display = $('aep_ww').style.display = 'none';
+		if (!m)
+    	{              
+			ae_cb(null);  // user pressed cancel, call callback with null
+            contextmenu.style.visibility = "hidden"; 
+		}
+		else
+			ae_cb($('aep_text').value); // user pressed OK 
+	}
+    /* End Prompt Code */
+
+    function radiusPrompt()	{
+		ae_prompt(customRadius,"Enter Radius Desired (.01-1000 mi):",shapes[selectedShape].radius,"");
+	}
+  
+    function customRadius(r)	{
+		if(r!=null)	{
+        	if(isNaN(r))	{
+           		ae_prompt(customRadius,"Enter Radius Desired (.01-1000 mi):",shapes[selectedShape].radius,"Invalid Radius - Please enter a number");
+         	}
+			else if (r>0 && r <= 1000) {
+            	 setCurrentRadius(r);
+			 	drawCircle(Math.round(r*1000)/1000);
+             	getCount();
+			}
+        	else	{
+				ae_prompt(customRadius,"Enter Radius Desired (.01-1000 mi):",shapes[selectedShape].radius,"Radius out of range - Please enter a radius from .01 to 1000mi");
+			}
+		}
+    }
+
+	// Process Shapes added from Context Menu
+	function addShape(kind)	{
+		switch(kind)	{
+		case 0:
+			newShape('Polygon');
+			break;
+		case 1: 
+            newShape('Circle');
+            setCurrentRadius(1);
+			break;
+		case 2: 
+            newShape('Circle');			
+            setCurrentRadius(3);
+			break;
+		case 3: 
+            newShape('Circle');			
+            setCurrentRadius(5);
+			break;
+        case 4: 
+           newShape('Circle');
+           ae_prompt(customRadius,"Enter Radius Desired (.01-1000 mi):","1","");
+		   break;
+		}
+	}
+
+    function setCurrentRadius(r)	{
+		shapes[selectedShape].radius = r;
+        $("shapelabel"+selectedShape).innerHTML = "&nbsp; " + (selectedShape+1) + " - Circle (" + r + ")";
+    }
+
+	// Clears all overlays from map
+    function clearMap(){
+        map.clearOverlays();
+        polyShapes.length = 0;
+        polyMarkers.length = 0;
+        selectedShape = 0;
+        polygons.length = 0;
+		document.getElementById("results").innerHTML =  "";
+        $("results").style.display = "none";
+        document.getElementById("shapeList").innerHTML = "No Boundaries Defined"
+        document.getElementById("newCircleBtn").disabled = false;
+		document.getElementById("newPolygonBtn").disabled = false;
+    }    
+	
+	// Sets the zoom level and centers map to display all shapes
+	function showAll()	{
+ 		var oBounds = new GLatLngBounds();
+		
+		if(polygons.length > 0)	{
+       		for (var i=0; i<polygons.length; i++) {
+				for(var j=0;j<polygons[i].getVertexCount();j++)	{
+					oBounds.extend(polygons[i].getVertex(j));
+				}
+			}
+			map.setZoom(map.getBoundsZoomLevel(oBounds)-1);        
+			map.panTo(oBounds.getCenter());		
+		}
+		contextmenu.style.visibility="hidden";       
+	}
+
+	// Zoom In
+	function zoomIn()	{
+		map.setCenter(map.fromContainerPixelToLatLng(clickedPixel));
+		map.zoomIn();
+		contextmenu.style.visibility="hidden";       
+	}
+	
+	// Zoom Out	
+	function zoomOut()	{
+		map.setCenter(map.fromContainerPixelToLatLng(clickedPixel));
+		map.zoomOut();
+		contextmenu.style.visibility="hidden";       
+	}
+
+	// Remove Selected Shape
+	function removeShape()	{
+		for(var i=0;i<polyMarkers[selectedShape].length;i++)	{
+			map.removeOverlay(polyMarkers[selectedShape][i]);
+		}
+		map.removeOverlay(polygons[selectedShape]);
+		polyMarkers.splice(selectedShape,1);
+		polyShapes.splice(selectedShape,1);
+        polygons.splice(selectedShape,1);
+		shapes.splice(selectedShape,1);
+		selectedShape = 0;
+		if(polyShapes[0])	{
+   			updateSelected(0);
+		}
+
+		// Recreate Radio Button List
+		$("shapeList").innerHTML = "";
+		if(shapes.length>0)	{
+			for(var j=0;j<shapes.length;j++)	{
+                if (shapes[j].type == "Polygon")	{$("shapeList").innerHTML = $("shapeList").innerHTML + "<input type='radio' id='radio" + j + "' name='shapes' value='" + j + "' onclick='updateSelected(" + j + ");'><label for='radio" + j + "'>&nbsp;"+ (j+1) + " - " + shapes[j].type + "</label><br>"; }
+                else if ( shapes[j].type == "Circle")	{$("shapeList").innerHTML = $("shapeList").innerHTML + "<input type='radio' id='radio" + j + "' name='shapes' value='" + j + "' onclick='updateSelected(" + j + ");'><label for='radio" + j + "'>&nbsp;"+ (j+1) + " - " + shapes[j].type + " - (" + shapes[j].radius+ ")</label><br>"; }                
+			}
+			document.getElementById("radio"+0).checked = true;		
+		}
+		contextmenu.style.visibility="hidden";       
+		getCount(); 
+	} 
+
+	// Remove Selected Point from Polygon
+	function deleteSelectedPoint(){      	
+		if(polyShapes.length>0 && selectedMarker)	{
+        	if(polyShapes[selectedShape].length > 0)	{
+				for(var i=0;i<polyMarkers[selectedShape].length;i++)	{
+					if(polyMarkers[selectedShape][i] == selectedMarker)	{
+						map.removeOverlay(polyMarkers[selectedShape][i]);
+						polyMarkers[selectedShape].splice(i,1);
+						polyShapes[selectedShape].splice(i,1);
+						redrawPolygon();
+						getCount();
+					}
+				}
+			}
+		}
+     }  
+	
+	// Remove Last Created Point from Polygon
+	function deleteLastPoint(){      	
+		if(polyShapes.length>0)	{
+        	if(polyShapes[selectedShape].length > 0)	{             
+      			map.removeOverlay(polyMarkers[selectedShape][polyMarkers[selectedShape].length-1]);
+            	polyMarkers[selectedShape].pop(); 
+				polyShapes[selectedShape].pop();
+				redrawPolygon();
+				getCount();
+			}
+		}
+     }
+ 
+	// Redraw Polygon 
+	function redrawPolygon()	{
+		if(polygons[selectedShape]){map.removeOverlay(polygons[selectedShape])};
+		if(polyShapes[selectedShape].length > 0)	{
+           	polygons[selectedShape] = new GPolygon(polyShapes[selectedShape],lineColor,lineWeight,opacity,fillColor,opacity);
+           	map.addOverlay(polygons[selectedShape]);        
+		}
+		else	{
+			polygons[selectedShape] = undefined;					
+			if (shapes[selectedShape].type == "Polygon")	{	document.getElementById("newPolygonBtn").disabled = true;	}
+		}		
+		contextmenu.style.visibility="hidden";
+	}
+
+	// Draw A Circle with specified Radius
+	function drawCircle(radius)	{
+		if(polygons[selectedShape])	{ map.removeOverlay(polygons[selectedShape]);	}
+		var cRadius = radius;         	// mile radius
+   		var d2r = Math.PI/180;   		// degrees to radians
+   		var r2d = 180/Math.PI;   		// radians to degrees
+   		var cLat = (cRadius/3963)*r2d;	//  using 3963 as earth's radius
+        shapes[selectedShape].radius = cRadius;
+        
+	   	var cLng = cLat/Math.cos(polyMarkers[selectedShape][0].getPoint().lat()*d2r);
+   	   	var cPoints = [];
+   	   	for (var i=0; i < 65; i++) {
+       		var theta = Math.PI * (i/32);
+      		Cx = polyMarkers[selectedShape][0].getPoint().lng() + (cLng * Math.cos(theta));
+      		Cy = polyMarkers[selectedShape][0].getPoint().lat() + (cLat * Math.sin(theta));
+      		//cPoints.push(new GPoint(Cx,Cy));
+			cPoints.push(new GLatLng(Cy,Cx));
+   		}
+   		polygons[selectedShape] = new GPolygon(cPoints,lineColor,lineWeight,opacity,fillColor,opacity);        
+		map.addOverlay(polygons[selectedShape]);	
+		contextmenu.style.visibility="hidden";
+
+        $("shapelabel"+selectedShape).innerHTML = "&nbsp; " + (selectedShape+1) + " - Circle (" + radius + ")";
+	}
+
+	function drawCoordinates(){
+		/* Add Marker */
+        if(polyShapes[selectedShape].length > 0)	{
+        	var lastMarker = polyMarkers[selectedShape].length;
+			polyMarkers[selectedShape].push(new GMarker(polyShapes[selectedShape][polyShapes[selectedShape].length-1], {icon:blueIcon, draggable: true}));
+			map.addOverlay(polyMarkers[selectedShape][lastMarker]);
+            GEvent.addListener(polyMarkers[selectedShape][lastMarker],'drag',function(){dragMarker()});
+            GEvent.addListener(polyMarkers[selectedShape][lastMarker],'dragend',function(){getCount()});
+		}
+		redrawPolygon();
+		getCount();             	        
+    }
+
+	function dragMarker()	{
+		// Populate polyShapes with Marker Points
+        polyShapes[selectedShape].length = 0;
+		for(var i=0;i<polyMarkers[selectedShape].length;i++)		{
+			polyShapes[selectedShape].push(polyMarkers[selectedShape][i].getPoint());
+		}		
+		redrawPolygon();
+	}
+
+	function mapClick(clickedPoint) {    
+		if(polyShapes[selectedShape])	{
+         	if(shapes[selectedShape].type == "Polygon")	{
+				polyShapes[selectedShape].push(clickedPoint);				
+				drawCoordinates();		
+            	document.getElementById("newPolygonBtn").disabled = false;
+			}
+			else if (shapes[selectedShape].type == "Circle")	{	
+				if(polyShapes[selectedShape].length == 0)	{
+					polyShapes[selectedShape].push(clickedPoint);
+    	            polyMarkers[selectedShape].push(new GMarker(polyShapes[selectedShape][0], {icon:blueIcon, draggable: true}));
+					if(shapes[selectedShape].radius == 0)	{
+        	        	shapes[selectedShape].radius = 1;                
+					}
+            	    GEvent.addListener(polyMarkers[selectedShape][0],'drag',function(){drawCircle(shapes[selectedShape].radius)});        
+                	GEvent.addListener(polyMarkers[selectedShape][0],'dragend',function(){polyShapes[selectedShape][0]=polyMarkers[selectedShape][0].getPoint(); getCount();});        
+                	map.addOverlay(polyMarkers[selectedShape][0]);
+					drawCircle(shapes[selectedShape].radius);       
+                	getCount();     		
+                	document.getElementById("newCircleBtn").disabled = false;
+				}
+			}
+		}
+		
+    }
+
+    // AJAX Get Count
+	function getCount() {
+        if(polyShapes[selectedShape])	{
+			if(polyShapes[selectedShape].length > 2 || shapes[selectedShape].type == "Circle")	{
+                var url = "%BIND(:2)EMPLOYEE/MIX/s/WEBLIB_CBRE_MAP.ISCRIPT1.FieldFormula.IScript_getCount";
+			
+    	    	var params = "";
+        		for (var i = 0; i<(polyShapes.length); i++) {
+            	    if(polyShapes[i].length > 2)	{ 
+                		if (params.length == 0 )	{ params = "poly=("; }
+						else	{ params += "&poly=("; }
+						for (var j = 0; j<(polyShapes[i].length);j++)	{
+							params += polyShapes[i][j].lng() + "," + polyShapes[i][j].lat() + ",";
+						}	 		    
+        				params += polyShapes[i][0].lng() + "," + polyShapes[i][0].lat() + ")";
+					}
+					else if (shapes[i].type == "Circle" && polyShapes[i].length > 0)	{
+						if(params.length == 0 )	{ params = "circle="; }
+						else	{ params += "&circle="; }
+                    	params += polyShapes[i][0].lng() + "," + polyShapes[i][0].lat() + "^" + shapes[i].radius;
+					}
+				}
+				
+				if(params != ""  && session != null)	{
+                    params += "&session=" + session;
+ 					var myAjaxC = new Ajax.Request(
+						url, 
+						{
+							method: 'get', 
+							parameters: params, 
+                            onLoading:  function(temp) { $("results").innerHTML = "Retrieving Count..."; },
+							onComplete: showResponse
+						});    
+				}
+    		}
+		}
+		else	{
+			$("results").innerHTML = "";
+            $("results").style.display = "none";
+			document.getElementById("getPropBtn").disabled = true;
+		}		
+	}
+	
+	function showResponse(originalRequest)	{        
+        $("results").innerHTML = originalRequest.responseText + " " + sType;        
+        $("results").style.display = "block";
+        currentCount = originalRequest.responseText;
+		if(parseInt(originalRequest.responseText) > 0)	{
+			document.getElementById("getPropBtn").disabled = false;
+		}
+	}
+
+	/* Create a new Shape */
+	function newShape(shapeType)	{
+       	var newShape = [];
+       	var newMarkers = [];
+		contextmenu.style.visibility="hidden";
+
+		if(shapes.length<7) {
+			/* Hide Previous Markers */
+			if(polyShapes.length > 0)	{
+        		for(var i=0;i<polyShapes[selectedShape].length;i++)	{
+				polyMarkers[selectedShape][i].hide();
+					}
+			}
+			selectedShape = polyShapes.length;
+        	shapes[selectedShape] = new shapeDesc(shapeType,0);		
+  			polyShapes.push(newShape);
+        	polyMarkers.push(newMarkers);        
+        	if(shapeType == "Circle")	{newCircleBtn();	}
+			else if(shapeType == "Polygon")   {newPolygonBtn();	}  		
+		}
+		else	{ alert ("The maximum number of User Defined Shapes is 7"); }
+	}
+	
+	/* Create a new Polygon Radio Button */
+	function newPolygonBtn() {
+		/* Add Radio Button for New Polygon */
+        if($("shapeList").innerHTML == "No Boundaries Defined")	{$("shapeList").innerHTML = "";}
+        $("shapeList").innerHTML = $("shapeList").innerHTML + "<input type='radio' id='radio" + selectedShape + "' name='shapes' value='" + selectedShape + "' onclick='updateSelected(" + selectedShape + ");'><label for='radio" + selectedShape + "'>&nbsp; " + (selectedShape+1) + " - Polygon</label><br>";    
+        document.getElementById("radio"+selectedShape).checked = true;		
+		document.getElementById("newPolygonBtn").disabled = true;
+	}
+
+	/* Create a new Circle Radio Button */
+	function newCircleBtn()	{
+        if($("shapeList").innerHTML == "No Boundaries Defined")	{$("shapeList").innerHTML = "";}
+		$("shapeList").innerHTML = $("shapeList").innerHTML + "<input type='radio' id='radio" + selectedShape + "' name='shapes' value='" + selectedShape + "' onclick='updateSelected(" + selectedShape + ");'><label id='shapelabel" + selectedShape + "' for='radio" + selectedShape + "'>&nbsp; " + (selectedShape+1) + " - Circle (1)</label><br>";  
+        document.getElementById("radio"+selectedShape).checked = true;		
+        document.getElementById("newCircleBtn").disabled = true;
+	}
+
+	/* Update the Selected Shape */
+	function updateSelected(selectedValue) {
+		/* Hide Previous Markers */
+		if(polyShapes[selectedShape])	{
+        	for(var i=0;i<polyShapes[selectedShape].length;i++)	{
+				polyMarkers[selectedShape][i].hide();
+			}
+		}
+		
+        /* Update Selected Shape */
+    	selectedShape = selectedValue;	
+        
+		/* Show Select Shape Markers */
+		if(polyShapes[selectedShape])	{
+        	for(var i=0;i<polyShapes[selectedShape].length;i++)	{
+				polyMarkers[selectedShape][i].show();
+			}	
+		}
+
+        if(polygons[selectedShape])	{
+        	map.panTo(polygons[selectedShape].getBounds().getCenter());
+		}
+	}
+	
+	// Pass Parameters in Query String
+	function returnToSearch(status)	{		
+        var url = "%BIND(:2)EMPLOYEE/MIX/c/CBRE_PROPERTY.CBRE_PROP_LIST.GBL?Page=CBRE_PROP_LIST_STD";
+       	var params = "";
+        var loadSearchType = "Y"
+		if(polyShapes[selectedShape])	{
+       		for (var i = 0; i<(polyShapes.length); i++) {
+	       		if(shapes[i].type == "Polygon" && polyShapes[i].length > 0)	{ 
+      				if (params.length == 0 )	{ params = "poly=("; }
+					else	{ params += "&poly=("; }
+					for (var j = 0; j<(polyShapes[i].length);j++)	{
+						params += Math.round(polyShapes[i][j].lng()*1000000)/1000000 + "," + Math.round(polyShapes[i][j].lat()*1000000)/1000000 + ",";
+					}	 		    
+   					params += Math.round(polyShapes[i][0].lng()*1000000)/1000000 + "," + Math.round(polyShapes[i][0].lat()*1000000)/1000000 + ")";
+				}	
+				else if (shapes[i].type == "Circle" && polyShapes[i].length > 0)	{
+					if(params.length == 0 )	{ params = "circle="; }
+					else	{ params += "&circle="; }
+        	   		params += Math.round(polyShapes[i][0].lng()*1000000)/1000000 + "," + Math.round(polyShapes[i][0].lat()*1000000)/1000000 + "^" + shapes[i].radius;
+				}
+			}
+		}
+		if(source == "map")	{loadSearchType = "MapReturn"; }
+
+        window.location.href = url + "&status=" + status + "&" + params + "&ls=" + loadSearchType + "&session=" + session;
+	}
+
+	function centerOnAddress() {
+		var address = $("Address").value;
+  		geocoder.getLatLng(
+    	address,
+    	function(point) {
+      		if (!point) {
+        		alert(address + " not found");
+      		} else {
+        	map.setCenter(point, 13);
+            newShape('Circle');
+            shapes[selectedShape].radius = .0568;  
+            mapClick(point);        	
+      		}
+    	}
+  		);
+	}
+	
+	function submitAddress(myfield,e)
+	{
+	var keycode;
+	if (window.event) keycode = window.event.keyCode;
+	else if (e) keycode = e.which;
+	else return true;
+
+	if (keycode == 13)
+   	{
+   		centerOnAddress();
+   		return false;
+   	}
+	else
+   		return true;
+	}	
+	//]]>
+    </script>
+  
+  </head>
+  <body onload="load()" onunload="GUnload()">    	
+    <div id="rightpanel">		
+		</br>
+        <div style="margin-left: 10px; margin-right: 10px; margin-bottom: 10px; margin-top: 10px; background-color: white;">
+			<fieldset class="PSGROUPBOX">
+			<legend class="PSGROUPBOXLABEL">User Defined Boundaries</legend>
+    		<div id="shapeList" style="margin-left: 10px;margin-top:5px;">No Boundaries Defined</div>		
+    		<div id="newButtons" style="margin-top:10px; margin-bottom: 10px; margin-left: 10px;">
+				<input type="button" style="margin-left:5px; float:left;" id="newPolygonBtn" onclick="newShape('Polygon');" value="New Polygon" class="PSPUSHBUTTON"/>
+				<input type="button" style="margin-left:5px; float:left;" id="newCircleBtn" onclick="newShape('Circle');" value="New Circle" class="PSPUSHBUTTON"/>
+			</div>     
+			</fieldset>			
+		</div>
+
+        <div id="load" style="display:none; margin-left: 10px;">loading...</div>
+    	<input type="button" style="margin-right: 10px; float: right;display:none;" id="getPropBtn" onclick="getProperties();" value="Get Properties" class="PSPUSHBUTTON" DISABLED/>
+                
+        <div style="margin-left: 10px; margin-right: 10px; margin-bottom: 10px; margin-top: 10px; background-color: white;">
+            <fieldset class="PSGROUPBOX">
+			<!--<legend class="PSGROUPBOXLABEL">Address</legend>-->
+            <b style="margin-left:10px;">Google Address (not MIX):</b>
+			<!--<input type="text" size="30" id="Address" name="Address" onKeyPress="return submitAddress(this,event)" class="PSEDITBOX"/>-->
+            <textarea id="Address" rows="2" cols="33" style="margin-left:d0px; margin-top:5px; margin-bottom:5px; overflow:hidden; font-family:Verdana,Arial,sans-serif;font-size:8pt;font-weight:normal;font-style:normal;" onKeyPress="return submitAddress(this,event)"></textarea>
+			<input type="button" style="margin-right: 10px; margin-bottom:10px; float: right;" onclick="centerOnAddress();" value="Find" class="PSPUSHBUTTON"/>	
+            </fieldset>
+		</div>
+
+       <input type="button" style="float: right; margin-right:30px;"onclick="clearMap();" value="Clear Map" class="PSPUSHBUTTON"/>
+       <b style="margin-left:20px;"><u>Result Count</u></b>
+       <div id="results" style="margin-left: 20px; margin-top: 2px;"></div>	 
+
+       <div id="bottomrow">            						
+            <input type="button" onclick="returnToSearch('cancel');" value="Cancel" class="PSPUSHBUTTON"/>
+			<input type="button" onclick="returnToSearch('ok');" value="OK" class="PSPUSHBUTTON"/>
+		</div>
+   	</div>    
+    <div id="map"></div>
+	<!-- ae_prompt HTML code -->
+	<div id="aep_ovrl" style="display: none;">&nbsp;</div>
+	<div id="aep_ww" style="display: none;">
+		<div id="aep_win"><div id="aep_t"></div>
+			<div id="aep_w"><span id="aep_prompt"></span>
+			<br /><input type="text" id="aep_text" onKeyPress="if((event.keyCode==10)||(event.keyCode==13)) ae_clk(1); if (event.keyCode==27) ae_clk(0);">
+			<br><div><input type="button" id="aep_ok" onclick="ae_clk(1);" value="OK" class="PSPUSHBUTTON">
+			<input type="button" id="aep_cancel" onclick="ae_clk(0);" value="Cancel" class="PSPUSHBUTTON">
+			</div></div>
+		</div>
+	</div>
+	<!-- ae_prompt HTML code -->
+  </body>
+</html>

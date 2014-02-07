@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <title>New MIX Maps</title>
+  <link rel="stylesheet" type="text/css" href="map.css">
+  <!-- IE specific code: -->
+  <!--[if lte IE 8]> 
+  <style type="text/css"> 
+  #aep_ovrl { 
+  position: absolute; 
+  filter:alpha(opacity=70); 
+  top: expression(eval(document.body.scrollTop)); 
+  width: expression(eval(document.body.clientWidth)); 
+  } 
+  #aep_ww {  
+  position: absolute;  
+  top: expression(eval(document.body.scrollTop));  
+  } 
+  </style> 
+  <![endif]-->  
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script src="http://maps.googleapis.com/maps/api/js?client=gme-cbre&sensor=false&v=3.14&channel=mix"></script>
+  <script src="mapnew.js"></script>
+</head>
+<body onload="initialize()">
+  <div id="rightpanel">		
+  </br>
+  <div style="margin-left: 10px; margin-right: 10px; margin-bottom: 10px; margin-top: 10px; background-color: white;">
+   <fieldset class="PSGROUPBOX">
+     <legend class="PSGROUPBOXLABEL">User Defined Boundaries</legend>
+     <div id="shapeList" style="margin-left: 10px;margin-top:5px;">No Boundaries Defined</div>		
+     <div id="newButtons" style="margin-top:10px; margin-bottom: 10px; margin-left: 10px;">
+      <input type="button" style="margin-left:5px; float:left;" id="newPolygonBtn" onclick="newShape('Polygon');" value="New Polygon" class="PSPUSHBUTTON"/>
+      <input type="button" style="margin-left:5px; float:left;" id="newCircleBtn" onclick="newShape('Circle');" value="New Circle" class="PSPUSHBUTTON"/>
+    </div>     
+  </fieldset>			
+</div>
+
+<div id="load" style="display:none; margin-left: 10px;">loading...</div>
+<input type="button" style="margin-right: 10px; float: right;display:none;" id="getPropBtn" onclick="getProperties();" value="Get Properties" class="PSPUSHBUTTON" DISABLED/>
+
+<div style="margin-left: 10px; margin-right: 10px; margin-bottom: 10px; margin-top: 10px; background-color: white;">
+  <fieldset class="PSGROUPBOX">
+   <b style="margin-left:10px;">Google Address (not MIX):</b>
+   <textarea id="Address" rows="2" cols="33" style="margin-left:d0px; margin-top:5px; margin-bottom:5px; overflow:hidden; font-family:Verdana,Arial,sans-serif;font-size:8pt;font-weight:normal;font-style:normal;" onKeyPress="return submitAddress(this,event)"></textarea>
+   <input type="button" style="margin-right: 10px; margin-bottom:10px; float: right;" onclick="centerOnAddress();" value="Find" class="PSPUSHBUTTON"/>	
+ </fieldset>
+</div>
+
+<input type="button" style="float: right; margin-right:30px;"onclick="clearMap();" value="Clear Map" class="PSPUSHBUTTON"/>
+<b style="margin-left:20px;"><u>Result Count</u></b>
+<div id="results" style="margin-left: 20px; margin-top: 2px;"></div>	 
+
+<div id="bottomrow">            						
+  <input type="button" onclick="returnToSearch('cancel');" value="Cancel" class="PSPUSHBUTTON"/>
+  <input type="button" onclick="returnToSearch('ok');" value="OK" class="PSPUSHBUTTON"/>
+</div>
+</div>    
+<div id="map"></div>
+  <!-- ae_prompt HTML code -->
+  <div id="aep_ovrl" style="display: none;">&nbsp;</div>
+  <div id="aep_ww" style="display: none;">
+    <div id="aep_win"><div id="aep_t"></div>
+      <div id="aep_w"><span id="aep_prompt"></span>
+      <br /><input type="text" id="aep_text" onKeyPress="if((event.keyCode==10)||(event.keyCode==13)) ae_clk(1); if (event.keyCode==27) ae_clk(0);">
+      <br><div><input type="button" id="aep_ok" onclick="ae_clk(1);" value="OK" class="PSPUSHBUTTON">
+      <input type="button" id="aep_cancel" onclick="ae_clk(0);" value="Cancel" class="PSPUSHBUTTON">
+      </div></div>
+    </div>
+  </div>
+  <!-- ae_prompt HTML code -->
+</body>
+</html>

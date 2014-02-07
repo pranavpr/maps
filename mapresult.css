@@ -1,0 +1,105 @@
+li {
+cursor:pointer;
+margin-bottom:5px;
+}
+
+#map {
+height:475px;
+width:100%;
+background:#000;
+}
+
+#rightpanel {
+float:right;
+height:485px;
+width:240px;
+overflow:auto;
+background-color:#98B9AD;
+}
+
+.PSPUSHBUTTON {
+font-family:Arial,sans-serif;
+font-size:8pt;
+font-weight:400;
+font-style:normal;
+color:#000;
+background-color:#fae8b1;
+background-repeat:no-repeat;
+background-position:2% 40%;
+vertical-align:middle;
+margin-left:5px;
+width:95px;
+height:20px;
+cursor:pointer;
+border-color:#ba9963;
+border-style:solid;
+border-width:1px;
+}
+
+.PSGROUPBOX {
+font-family:Verdana,Arial,sans-serif;
+font-size:8pt;
+font-weight:400;
+font-style:normal;
+color:#003021;
+background-color:#FFF;
+border-top-color:#003021;
+border-bottom-color:#003021;
+border-style:solid none;
+border-width:0 0 1px;
+}
+
+.PSGROUPBOXLABEL {
+font-family:Verdana,Arial,sans-serif;
+font-size:8pt;
+font-weight:700;
+font-style:normal;
+color:#003021;
+text-indent:1px;
+padding-bottom:1px;
+border-top-width:0;
+border-bottom-width:1px;
+border-top-color:#003021;
+border-bottom-color:#003021;
+border-style:none none solid;
+}
+
+body,div,fieldset,input,textarea,p {
+margin:0;
+padding:0;
+}
+
+.context {
+font-family:Arial, sans-serif;
+text-decoration:none;
+font-size:9pt;
+}
+
+a:hover div {
+background:#eee;
+}
+
+.contextmenu {
+visibility:hidden;
+position:relative;
+width:160px;
+background-color:#FFF;
+border:1px solid gray;
+text-decoration:none;
+}
+
+.contextmenu div {
+font-family:Arial, sans-serif;
+text-decoration:none;
+font-size:9pt;
+white-space:nowrap;
+padding:3px 6px;
+}
+
+.contextmenu div:hover {
+background-color:#CCC;
+cursor:pointer;
+font-size:9pt;
+white-space:nowrap;
+text-decoration:none;
+}
