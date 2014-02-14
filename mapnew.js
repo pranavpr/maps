@@ -32,8 +32,14 @@ contextmenuDir.className = 'contextmenu';
 /**
  * JavaScript Prompt
  * @method ae$
- * @param {} a
- * @return CallExpression
+ * @param {string} a
+ * @return {document.element} Expression
+ */
+
+/**
+ * JavaScript Prompt
+ * @param  {string} a ID to get
+ * @return {document.element}   Document element
  */
 function ae$(a) {
     return document.getElementById(a);
@@ -41,12 +47,11 @@ function ae$(a) {
 
 /**
  * JavaScript Prompt
- * @method ae_prompt
- * @param {} cb
- * @param {} q
- * @param {} a
- * @param {} t
- * @return
+ * @param  {Function} cb Call back function
+ * @param  {string}   q  Prompt HTML
+ * @param  {string}   a  Prompt text
+ * @param  {string}   t  Text
+ * @return {null}
  */
 function ae_prompt(cb, q, a, t) {
     ae_cb = cb;
@@ -60,9 +65,8 @@ function ae_prompt(cb, q, a, t) {
 
 /**
  * JavaScript Prompt
- * @method ae_clk
- * @param {} m
- * @return
+ * @param  {string} m Value set if user click OK otherwise null
+ * @return {null}
  */
 function ae_clk(m) {
     ae$('aep_ovrl').style.display = ae$('aep_ww').style.display = 'none';
@@ -75,8 +79,7 @@ function ae_clk(m) {
 
 /**
  * Prompt for Radius
- * @method radiusPrompt
- * @return
+ * @return {null}
  */
 function radiusPrompt() {
     $('.contextmenu').remove();
@@ -85,9 +88,8 @@ function radiusPrompt() {
 
 /**
  * Sets custom radius of circle
- * @method customRadius
- * @param {} r
- * @return
+ * @param  {number} r Radius of circle
+ * @return {null}
  */
 function customRadius(r) {
     if (r != null) {
@@ -110,6 +112,13 @@ function customRadius(r) {
  * @param {} radius
  * @return
  */
+
+/**
+ * Shape constructor
+ * @param  {string} type   Type of shape
+ * @param  {number} radius Radius of circle
+ * @return {null}
+ */
 function shapeDesc(type, radius) {
     this.type = type;
     this.radius = radius;
@@ -117,9 +126,8 @@ function shapeDesc(type, radius) {
 
 /**
  * Gets canvas location
- * @method getCanvasXY
- * @param {} caurrentLatLng
- * @return caurrentLatLngOffset
+ * @param  {google.maps.LatLng} caurrentLatLng       Point where right click was made
+ * @return {google.maps.LatLng} caurrentLatLngOffset Offset
  */
 function getCanvasXY(caurrentLatLng) {
     var scale = Math.pow(2, map.getZoom());
@@ -138,9 +146,7 @@ function getCanvasXY(caurrentLatLng) {
 
 /**
  * Sets context menu's position
- * @method setMenuXY
- * @param {} caurrentLatLng
- * @return
+ * @param  {google.maps.LatLng} caurrentLatLng       Point where right click was made
  */
 function setMenuXY(caurrentLatLng) {
     var mapWidth = $('#map').width();
@@ -162,9 +168,8 @@ function setMenuXY(caurrentLatLng) {
 
 /**
  * Shows context menu
- * @method showContextMenu
- * @param {} caurrentLatLng
- * @return
+ * @param  {google.maps.LatLng} caurrentLatLng       Point where right click was made
+ * @return {null}
  */
 function showContextMenu(caurrentLatLng) {
     var projection;
@@ -188,8 +193,7 @@ function showContextMenu(caurrentLatLng) {
 
 /**
  * Converts degress to radians
- * @method toRad
- * @return BinaryExpression
+ * @return {float} Radian value
  */
 Number.prototype.toRad = function() {
     return this * Math.PI / 180;
@@ -197,8 +201,7 @@ Number.prototype.toRad = function() {
 
 /**
  * Converts radians to degrees
- * @method toDeg
- * @return BinaryExpression
+ * @return {float} Degree value
  */
 Number.prototype.toDeg = function() {
     return this * 180 / Math.PI;
@@ -210,6 +213,13 @@ Number.prototype.toDeg = function() {
  * @param {} brng
  * @param {} dist
  * @return NewExpression
+ */
+
+/**
+ * Gets a point of map with specified angle and distance
+ * @param  {float} brng         Angle
+ * @param  {float} dist         Distance
+ * @return {google.maps.LatLng} Destination Point
  */
 google.maps.LatLng.prototype.destinationPoint = function(brng, dist) {
     dist = dist / 3959;
@@ -233,8 +243,7 @@ google.maps.LatLng.prototype.destinationPoint = function(brng, dist) {
 
 /**
  * Centers map to display all shapes
- * @method showAll
- * @return
+ * @return {null}
  */
 function showAll() {
     var oBounds = new google.maps.LatLngBounds();
@@ -258,8 +267,7 @@ function showAll() {
 
 /**
  * Zoom In
- * @method zoomIn
- * @return
+ * @return {null}
  */
 function zoomIn() {
     map.setCenter(clickedPixel);
@@ -269,8 +277,7 @@ function zoomIn() {
 
 /**
  * Zoom Out
- * @method zoomOut
- * @return
+ * @return {null}
  */
 function zoomOut() {
     map.setCenter(clickedPixel);
@@ -486,6 +493,7 @@ function drawCoordinates() {
             position: polyShapes[selectedShape][polyShapes[selectedShape].length - 1],
             draggable: true,
             map: map,
+            icon: '/mix/marker_small.png',
             indexID: polyShapes[selectedShape].length - 1
         }));
         google.maps.event.addListener(polyMarkers[selectedShape][lastMarker], 'drag', function() {
@@ -572,6 +580,7 @@ function mapClick(clickedPoint) {
                 polyMarkers[selectedShape].push(new google.maps.Marker({
                     position: polyShapes[selectedShape][0],
                     draggable: true,
+                    icon: '/mix/marker_small.png',
                     map: map
                 }));
             }

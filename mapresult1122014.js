@@ -2,17 +2,18 @@ var map;
 var overlay;
 var clickedPixel;
 var markerArray = [];
-var menuMap = '<a onclick="javascript:showAll();"><div class="context">&nbsp;&nbsp;Show All&nbsp;&nbsp;</div></a>' + '<a onclick="javascript:zoomIn();"><div class="context">&nbsp;&nbsp;Zoom In&nbsp;&nbsp;</div></a>' + '<a onclick="javascript:zoomOut();"><div class="context">&nbsp;&nbsp;Zoom Out&nbsp;&nbsp;</div></a>';
+var menuMap = "<a onclick='javascript:showAll();'><div class='context' style='cursor:pointer;'>&nbsp;&nbsp;Show All&nbsp;&nbsp;</div></a>" + "<a onclick='javascript:zoomIn();'><div class='context' style='cursor:pointer;'>&nbsp;&nbsp;Zoom In&nbsp;&nbsp;</div></a>" + "<a onclick='javascript:zoomOut();'><div class='context' style='cursor:pointer;'>&nbsp;&nbsp;Zoom Out&nbsp;&nbsp;</div></a>";
 var contextmenuDir = document.createElement("div");
 var infowindow = new google.maps.InfoWindow;
+// Variables for Loading Loop
 var init = 0;
 var markers;
 contextmenuDir.className = 'contextmenu';
-
 /**
  * Gets canvas location
- * @param {google.maps.LatLng} caurrentLatLng       Point where right click was made
- * @return {google.maps.Point} caurrentLatLngOffset Offset
+ * @method getCanvasXY
+ * @param {} caurrentLatLng
+ * @return caurrentLatLngOffset
  */
 function getCanvasXY(caurrentLatLng) {
     var scale = Math.pow(2, map.getZoom());
@@ -30,8 +31,10 @@ function getCanvasXY(caurrentLatLng) {
 }
 
 /**
- * Sets context menu position
- * @param {google.maps.LatLng} caurrentLatLng Point where right click was made
+ * Sets context menu's position
+ * @method setMenuXY
+ * @param {} caurrentLatLng
+ * @return
  */
 function setMenuXY(caurrentLatLng) {
     var mapWidth = $('#map').width();
@@ -50,10 +53,10 @@ function setMenuXY(caurrentLatLng) {
     $('.contextmenu').css('left', x);
     $('.contextmenu').css('top', y);
 };
-
 /**
- * Zoom In Map
- * @return {null}
+ * Zoom In
+ * @method zoomIn
+ * @return
  */
 function zoomIn() {
     map.setCenter(clickedPixel);
@@ -62,8 +65,9 @@ function zoomIn() {
 }
 
 /**
- * Zoom Out Map
- * @return {null}
+ * Zoom Out
+ * @method zoomOut
+ * @return
  */
 function zoomOut() {
     map.setCenter(clickedPixel);
@@ -73,8 +77,9 @@ function zoomOut() {
 
 /**
  * Shows context menu
- * @param {google.maps.LatLng} caurrentLatLng Point where right click was made
- * @return {null}
+ * @method showContextMenu
+ * @param {} caurrentLatLng
+ * @return
  */
 function showContextMenu(caurrentLatLng) {
     var projection;
@@ -89,13 +94,9 @@ function showContextMenu(caurrentLatLng) {
     contextmenuDir.style.visibility = "visible";
 }
 
-/**
- * Get Maerkers Information via AJAX call
- * @return {null}
- */
 function getMarkers() {
     $.ajax({
-        url: 'data.xml',
+        url: '%bind(:1)',
         type: 'GET',
         dataType: "xml"
     })
@@ -106,10 +107,6 @@ function getMarkers() {
         });
 }
 
-/**
- * Load markers on Map
- * @return {null}
- */
 function loadMarkers() {
     if (init < markers.length) {
         var max = Math.min(init + 10, markers.length);
@@ -155,27 +152,20 @@ function loadMarkers() {
     }
     if (init >= markers.length) {
         showAll();
+        //map.savePosition();
         $("#load").css({
             'display': 'none'
         });
     }
 }
 
-
-/**
- * A function to create the marker and set up the event window
- * @param  {google.maps.LatLng} point       Marker position
- * @param  {string}             html        Infoewindow Text
- * @param  {number}             n           Marker ID
- * @param  {string}             markerColor Marker Color
- * @return {google.maps.Marker} newMarker   New Marker
- */
+// A function to create the marker and set up the event window
 function createMarker(point, html, n, markerColor) {
     var image;
     if (n < 301) {
-        image = "/mix/" + markerColor + "/marker" + n + ".png";
+        image = "https://uscdcmix26/ReportPreview/" + markerColor + "Icons/marker" + n + ".png";
     } else {
-        image = "/mix/" + markerColor + "/blank.png";
+        image = "https://uscdcmix26/ReportPreview/" + markerColor + "Icons/blank.png";
     }
 
     var newMarker = new google.maps.Marker({
@@ -189,20 +179,13 @@ function createMarker(point, html, n, markerColor) {
     });
     return newMarker;
 }
-/**
- * Selects a marker on Map
- * @param  {number} markerNum Marker ID
- * @return {null}
- */
+
 function selectMarker(markerNum) {
     map.setZoom(13);
     if ($("#sidebar").css('display') != 'none') {
         map.setZoom(17);
         map.setCenter(markerArray[markerNum].position);
-        var coordinates = overlay.getProjection().fromContainerPixelToLatLng(
-            new google.maps.Point(520, 180)
-        );
-        map.setCenter(coordinates);
+        //map.setCenter(map.fromContainerPixelToLatLng(new GPoint(520, 180)));
     } else {
         map.panTo(markerArray[markerNum].position);
     }
@@ -210,8 +193,9 @@ function selectMarker(markerNum) {
 }
 
 /**
- * Centers map to display all markers
- * @return {null}
+ * Centers map to display all shapes
+ * @method showAll
+ * @return
  */
 function showAll() {
     var oBounds = new google.maps.LatLngBounds();
@@ -221,19 +205,10 @@ function showAll() {
         }
         map.fitBounds(oBounds);
     }
-    if ($("#sidebar").css('display') != 'none') {
-        var coordinates = overlay.getProjection().fromContainerPixelToLatLng(
-            new google.maps.Point(520, 238)
-        );
-        map.setCenter(coordinates);
-    }
     $('.contextmenu').remove();
 }
 
-/**
- * Show side bar
- * @return {null}
- */
+
 function showSidebar() {
     $("#showSidebarControl").css({
         "display": "none"
@@ -244,16 +219,17 @@ function showSidebar() {
     $("#hideSidebarControl").css({
         "display": "block"
     });
+    /*
+        map.removeControl(mapTypeControl);
+        mapTypeControl = new GMapTypeControl();
+        map.addControl(mapTypeControl, new GControlPosition(G_ANCHOR_TOP_RIGHT, new GSize(310,10)));
+        map.setCenter(map.fromContainerPixelToLatLng(new GPoint(520,238)));*/
     var coordinates = overlay.getProjection().fromContainerPixelToLatLng(
         new google.maps.Point(520, 238)
     );
     map.setCenter(coordinates);
 }
 
-/**
- * Hide side bar
- * @return {null}
- */
 function hideSidebar() {
     $("#showSidebarControl").css({
         "display": "block"
@@ -264,16 +240,18 @@ function hideSidebar() {
     $("#hideSidebarControl").css({
         "display": "none"
     });
+    /*
+        map.removeControl(mapTypeControl);
+        mapTypeControl = new GMapTypeControl();
+        map.addControl(mapTypeControl);        
+        map.setCenter(map.fromContainerPixelToLatLng(new GPoint(240,238)));
+        */
     var coordinates = overlay.getProjection().fromContainerPixelToLatLng(
         new google.maps.Point(240, 238)
     );
     map.setCenter(coordinates);
 }
 
-/**
- * Initializes Map
- * @return {null}
- */
 function initialize() {
     var mapOptions = {
         center: new google.maps.LatLng(34, -118),
@@ -297,7 +275,5 @@ function initialize() {
         getMarkers();
     }
 }
-/**
- * Add DOM Listener to initialize map on load
- */
+
 google.maps.event.addDomListener(window, 'load', initialize);
