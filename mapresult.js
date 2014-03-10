@@ -122,19 +122,19 @@ function loadMarkers() {
 
             switch (propType) {
                 case '1':
-                    markerColor = "Red";
+                    markerColor = "FF0000";
                     break;
                 case '2':
-                    markerColor = "Yellow";
+                    markerColor = "FFFF00";
                     break;
                 case '3':
-                    markerColor = "Green";
+                    markerColor = "00FFBF";
                     break;
                 case '4':
-                    markerColor = "White";
+                    markerColor = "FFFFFF";
                     break;
                 default:
-                    markerColor = "Red";
+                    markerColor = "FF0000";
             }
             var marker = createMarker(point, html, init + 1, markerColor);
             markerArray.push(marker);
@@ -173,9 +173,10 @@ function loadMarkers() {
 function createMarker(point, html, n, markerColor) {
     var image;
     if (n < 301) {
-        image = "/mix/" + markerColor + "/marker" + n + ".png";
+        //image = "/mix/" + markerColor + "/marker" + n + ".png";
+        image = "https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=" + n + "|" + markerColor + "|000000";
     } else {
-        image = "/mix/" + markerColor + "/blank.png";
+        image = "";
     }
 
     var newMarker = new google.maps.Marker({
